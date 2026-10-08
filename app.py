@@ -104,9 +104,11 @@ st.markdown("""
 
     /* Estilo Moodle para Preguntas y Opciones */
     .moodle-box {
-        background-color: #DDE5E3; /* Color verde/gris suave de Moodle */
-        padding: 25px 25px 40px 25px; /* Amplio padding abajo para evitar solapamiento */
+        background-color: #D6E0DD; /* Verde grisáceo exacto de Moodle */
+        padding: 25px 25px 35px 25px; /* Amplio padding abajo para evitar solapamiento */
         border-radius: 8px 8px 0 0;
+        border: 1px solid #BFCBC7;
+        border-bottom: none;
         font-size: 1.15rem;
         font-weight: 500;
         color: #1A202C;
@@ -114,11 +116,15 @@ st.markdown("""
     }
     
     div[data-testid="stRadio"] {
-        background-color: #DDE5E3;
+        background-color: #D6E0DD;
         padding: 0px 25px 25px 25px;
         border-radius: 0 0 8px 8px;
+        border: 1px solid #BFCBC7;
+        border-top: none;
         position: relative;
         z-index: 2;
+        width: 100% !important;
+        display: block !important;
     }
     
     div[data-testid="stRadio"] > div {
