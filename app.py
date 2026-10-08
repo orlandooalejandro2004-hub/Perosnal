@@ -21,11 +21,11 @@ st.markdown("""
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
     
-    /* Ajustar el padding principal para móviles */
+    /* Ajustar el padding principal */
     .block-container {
         padding-top: 2rem !important;
         padding-bottom: 6rem !important;
-        max-width: 500px !important;
+        max-width: 800px !important;
     }
     
     /* Top Bar (Nivel, Corona, etc) */
@@ -105,17 +105,20 @@ st.markdown("""
     /* Estilo Moodle para Preguntas y Opciones */
     .moodle-box {
         background-color: #DDE5E3; /* Color verde/gris suave de Moodle */
-        padding: 25px 25px 5px 25px;
+        padding: 25px 25px 40px 25px; /* Amplio padding abajo para evitar solapamiento */
         border-radius: 8px 8px 0 0;
-        font-size: 1.05rem;
-        color: #212529;
-        margin-bottom: -15px; /* Para conectar con el radio button */
+        font-size: 1.15rem;
+        font-weight: 500;
+        color: #1A202C;
+        margin-bottom: -1.5rem; /* Anula el gap por defecto de Streamlit */
     }
     
     div[data-testid="stRadio"] {
         background-color: #DDE5E3;
         padding: 0px 25px 25px 25px;
         border-radius: 0 0 8px 8px;
+        position: relative;
+        z-index: 2;
     }
     
     div[data-testid="stRadio"] > div {
