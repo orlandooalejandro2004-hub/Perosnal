@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 import random
+import re
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Theaai Study Premium", page_icon="🎓", layout="centered", initial_sidebar_state="collapsed")
@@ -101,24 +102,35 @@ st.markdown("""
         line-height: 1.4;
     }
 
-    /* Opciones del Simulador */
-    /* FIX: Aseguramos que el texto sea oscuro, forzando selectores profundos */
-    .stRadio > div {
-        background: white;
-        border: 1px solid #E2E8F0;
-        padding: 15px;
-        border-radius: 15px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        transition: all 0.2s;
+    /* Estilo Moodle para Preguntas y Opciones */
+    .moodle-box {
+        background-color: #DDE5E3; /* Color verde/gris suave de Moodle */
+        padding: 25px 25px 5px 25px;
+        border-radius: 8px 8px 0 0;
+        font-size: 1.05rem;
+        color: #212529;
+        margin-bottom: -15px; /* Para conectar con el radio button */
     }
-    .stRadio label, .stRadio p, .stRadio span, div[role="radiogroup"] p {
-        color: #1E293B !important;
-        font-weight: 500 !important;
+    
+    div[data-testid="stRadio"] {
+        background-color: #DDE5E3;
+        padding: 0px 25px 25px 25px;
+        border-radius: 0 0 8px 8px;
     }
-    .stRadio > div:hover {
-        border-color: #007AFF;
-        background-color: #F0F7FF;
+    
+    div[data-testid="stRadio"] > div {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    div[role="radiogroup"] p {
+        color: #212529 !important;
+        font-weight: 400 !important;
+        font-size: 1rem !important;
+        margin-left: 5px;
     }
     
     /* Explicaciones */
@@ -162,14 +174,14 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* Botones primarios redondeados */
+    /* Botones estilo Moodle (verde oscuro) */
     .stButton>button {
-        border-radius: 25px !important;
-        font-weight: 600 !important;
-        background-color: #0E172C !important;
+        border-radius: 6px !important;
+        font-weight: normal !important;
+        background-color: #0E271D !important;
         color: white !important;
         border: none !important;
-        padding: 10px 20px !important;
+        padding: 8px 24px !important;
     }
 
 </style>
@@ -251,16 +263,12 @@ def main():
             p = p_sim[idx]
             
             st.markdown(f'''
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div class="question-title" style="margin-bottom:0;">{idx+1}. {p["pregunta"]}</div>
-                <div style="color:#64748B; font-weight:bold; font-size:0.9rem; background:#E2E8F0; padding:4px 10px; border-radius:12px;">
-                    {idx+1}/{len(p_sim)}
-                </div>
+            <div class="moodle-box">
+                {p["pregunta"]}
             </div>
-            <hr style="margin-top:10px; margin-bottom:20px; border-top:1px solid #E2E8F0;">
             ''', unsafe_allow_html=True)
             
-            opcion_elegida = st.radio(" ", options=range(len(p['opciones'])), format_func=lambda i: p['opciones'][i], label_visibility="collapsed", index=None, key=f"radio_{idx}")
+            opcion_elegida = st.radio(" ", options=range(len(p['opciones'])), format_func=lambda i: f"{chr(97+i)}.   {re.sub(r'^[a-dA-D]\.\s*', '', p['opciones'][i].strip())}", label_visibility="collapsed", index=None, key=f"radio_{idx}")
 
             if opcion_elegida is not None:
                 st.session_state.respondido = True
@@ -290,7 +298,8 @@ def main():
                     ''', unsafe_allow_html=True)
 
                 st.write("") # Espacio
-                if st.button("Siguiente ➡️", use_container_width=True):
+                colA, colB, colC = st.columns([1,1,1])
+                if colC.button("Siguiente página", use_container_width=True):
                     st.session_state.pregunta_actual += 1
                     st.session_state.respondido = False
                     st.rerun()
@@ -339,16 +348,12 @@ def main():
                 p = p_sim[idx]
                 
                 st.markdown(f'''
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div class="question-title" style="margin-bottom:0;">{idx+1}. {p["pregunta"]}</div>
-                    <div style="color:#64748B; font-weight:bold; font-size:0.9rem; background:#E2E8F0; padding:4px 10px; border-radius:12px;">
-                        {idx+1}/{len(p_sim)}
-                    </div>
+                <div class="moodle-box">
+                    {p["pregunta"]}
                 </div>
-                <hr style="margin-top:10px; margin-bottom:20px; border-top:1px solid #E2E8F0;">
                 ''', unsafe_allow_html=True)
                 
-                opcion_elegida = st.radio(" ", options=range(len(p['opciones'])), format_func=lambda i: p['opciones'][i], label_visibility="collapsed", index=None, key=f"radio_al_{idx}")
+                opcion_elegida = st.radio(" ", options=range(len(p['opciones'])), format_func=lambda i: f"{chr(97+i)}.   {re.sub(r'^[a-dA-D]\.\s*', '', p['opciones'][i].strip())}", label_visibility="collapsed", index=None, key=f"radio_al_{idx}")
 
                 if opcion_elegida is not None:
                     st.session_state.aleatorio_respondido = True
@@ -378,7 +383,8 @@ def main():
                         ''', unsafe_allow_html=True)
 
                     st.write("") # Espacio
-                    if st.button("Siguiente ➡️", use_container_width=True):
+                    colA, colB, colC = st.columns([1,1,1])
+                    if colC.button("Siguiente página", use_container_width=True):
                         st.session_state.aleatorio_actual += 1
                         st.session_state.aleatorio_respondido = False
                         st.rerun()
