@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 import random
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Theaai Study Premium", page_icon="🎓", layout="centered", initial_sidebar_state="collapsed")
 
@@ -199,10 +200,11 @@ def main():
     st.markdown('<div class="top-bar"><span class="top-bar-text">Nivel 1: 0%</span><span class="top-bar-icons">✨ 👑</span></div>', unsafe_allow_html=True)
     
     # Navegación Superior
-    cols = st.columns(3)
+    cols = st.columns(4)
     if cols[0].button("🏠 Home", use_container_width=True): st.session_state.current_tab = "Home"
     if cols[1].button("🎴 Tarjetas", use_container_width=True): st.session_state.current_tab = "Tarjetas"
     if cols[2].button("📝 Prueba", use_container_width=True): st.session_state.current_tab = "Prueba"
+    if cols[3].button("🎲 Aleatorio", use_container_width=True): st.session_state.current_tab = "Aleatorio"
     
     st.write("---")
 
@@ -266,8 +268,10 @@ def main():
                 
                 if es_correcta:
                     st.success("✅ ¡Excelente!")
+                    components.html('<script>navigator.vibrate(100);</script><audio autoplay><source src="https://actions.google.com/sounds/v1/ui/bell_ding.ogg" type="audio/ogg"></audio>', height=0)
                 else:
                     st.error("❌ Respuesta Incorrecta")
+                    components.html('<script>navigator.vibrate([100, 50, 100]);</script><audio autoplay><source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg"></audio>', height=0)
                     
                 explicacion = p.get('explicacion', "Revisa los apuntes legales correspondientes a este tema.")
                 
@@ -289,6 +293,99 @@ def main():
                 if st.button("Siguiente ➡️", use_container_width=True):
                     st.session_state.pregunta_actual += 1
                     st.session_state.respondido = False
+                    st.rerun()
+
+    elif st.session_state.current_tab == "Aleatorio":
+        if not preguntas:
+            st.error("No hay preguntas cargadas en preguntas.json")
+            return
+            
+        if not st.session_state.get('aleatorio_configurado', False):
+            st.markdown('<div class="question-title">Configuración de Práctica</div>', unsafe_allow_html=True)
+            
+            st.markdown("<p style='color:#475569; font-size:0.95rem; margin-bottom:10px;'>Crea una sesión de estudio personalizada según tus necesidades.</p>", unsafe_allow_html=True)
+            
+            num_q = st.number_input("¿Cuántas preguntas quieres estudiar?", min_value=1, max_value=len(preguntas), value=min(50, len(preguntas)))
+            modo = st.radio("Modo de selección:", ["De manera aleatoria", "Seguida (orden original)"])
+            
+            start_idx = 1
+            if modo == "Seguida (orden original)":
+                start_idx = st.number_input(f"¿Desde qué pregunta empezar? (1 a {len(preguntas)})", min_value=1, max_value=len(preguntas), value=1)
+                # Ajustamos num_q si se pasa del límite al elegir seguida
+                if start_idx - 1 + num_q > len(preguntas):
+                    num_q = len(preguntas) - start_idx + 1
+                    st.warning(f"Solo hay {num_q} preguntas disponibles desde esa posición.")
+            
+            if st.button("Empezar a Estudiar", use_container_width=True):
+                if modo == "De manera aleatoria":
+                    st.session_state.p_aleatorio = random.sample(preguntas, num_q)
+                else:
+                    st.session_state.p_aleatorio = preguntas[start_idx-1 : start_idx-1 + num_q]
+                
+                st.session_state.aleatorio_actual = 0
+                st.session_state.aleatorio_respondido = False
+                st.session_state.aleatorio_configurado = True
+                st.rerun()
+        else:
+            idx = st.session_state.aleatorio_actual
+            p_sim = st.session_state.p_aleatorio
+            
+            if idx >= len(p_sim):
+                st.success("¡Has completado esta sesión de estudio!")
+                if st.button("Configurar nueva sesión"):
+                    st.session_state.aleatorio_configurado = False
+                    st.rerun()
+            else:
+                p = p_sim[idx]
+                
+                st.markdown(f'''
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="question-title" style="margin-bottom:0;">{idx+1}. {p["pregunta"]}</div>
+                    <div style="color:#64748B; font-weight:bold; font-size:0.9rem; background:#E2E8F0; padding:4px 10px; border-radius:12px;">
+                        {idx+1}/{len(p_sim)}
+                    </div>
+                </div>
+                <hr style="margin-top:10px; margin-bottom:20px; border-top:1px solid #E2E8F0;">
+                ''', unsafe_allow_html=True)
+                
+                opcion_elegida = st.radio(" ", options=range(len(p['opciones'])), format_func=lambda i: p['opciones'][i], label_visibility="collapsed", index=None, key=f"radio_al_{idx}")
+
+                if opcion_elegida is not None:
+                    st.session_state.aleatorio_respondido = True
+                    es_correcta = (opcion_elegida == p['respuesta_correcta'])
+                    
+                    if es_correcta:
+                        st.success("✅ ¡Excelente!")
+                        components.html('<script>navigator.vibrate(100);</script><audio autoplay><source src="https://actions.google.com/sounds/v1/ui/bell_ding.ogg" type="audio/ogg"></audio>', height=0)
+                    else:
+                        st.error("❌ Respuesta Incorrecta")
+                        components.html('<script>navigator.vibrate([100, 50, 100]);</script><audio autoplay><source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg"></audio>', height=0)
+                        
+                    explicacion = p.get('explicacion', "Revisa los apuntes legales correspondientes a este tema.")
+                    
+                    clase_css = "explanation-box" if es_correcta else "explanation-box error"
+                    st.markdown(f'''
+                    <div class="{clase_css}">
+                        {explicacion}
+                    </div>
+                    ''', unsafe_allow_html=True)
+                    
+                    if not es_correcta:
+                        st.markdown(f'''
+                        <div class="explanation-box" style="margin-top:10px; border-left-color:#007AFF; background-color:#F0F7FF;">
+                            <b>La respuesta correcta era:</b> {p['opciones'][p['respuesta_correcta']]}
+                        </div>
+                        ''', unsafe_allow_html=True)
+
+                    st.write("") # Espacio
+                    if st.button("Siguiente ➡️", use_container_width=True):
+                        st.session_state.aleatorio_actual += 1
+                        st.session_state.aleatorio_respondido = False
+                        st.rerun()
+                        
+                st.write("---")
+                if st.button("Terminar sesión tempranamente", key=f"end_early_{idx}"):
+                    st.session_state.aleatorio_configurado = False
                     st.rerun()
 
     elif st.session_state.current_tab == "Tarjetas":
